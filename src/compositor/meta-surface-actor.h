@@ -46,6 +46,12 @@ void meta_surface_actor_set_opaque_region (MetaSurfaceActor *self,
                                            MtkRegion        *region);
 MtkRegion * meta_surface_actor_get_opaque_region (MetaSurfaceActor *self);
 
+void meta_surface_actor_ensure_frame_sync_stage_view (MetaSurfaceActor *self,
+                                                      ClutterStageView *stage_view);
+
+void meta_surface_actor_remove_frame_sync_stage_view (MetaSurfaceActor *self,
+                                                      ClutterStageView *stage_view);
+
 void meta_surface_actor_schedule_update (MetaSurfaceActor *self);
 
 void meta_surface_actor_process_damage (MetaSurfaceActor   *actor,
