@@ -446,11 +446,25 @@ meta_surface_actor_remove_frame_sync_stage_view (MetaSurfaceActor *self,
 void
 meta_surface_actor_schedule_update (MetaSurfaceActor *self)
 {
+  MetaSurfaceActorPrivate *priv =
+    meta_surface_actor_get_instance_private (self);
   ClutterStage *stage;
+  int64_t now_us;
+  GList *l;
 
   stage = CLUTTER_STAGE (clutter_actor_get_stage (CLUTTER_ACTOR (self)));
   if (!stage)
     return;
+
+  now_us = g_get_monotonic_time ();
+  for (l = priv->frame_sync_stage_views; l; l = l->next)
+    {
+      ClutterStageView *stage_view = l->data;
+      ClutterFrameClock *frame_clock;
+
+      frame_clock = clutter_stage_view_get_frame_clock (stage_view);
+      clutter_frame_clock_set_frame_sync_update_time (frame_clock, now_us);
+    }
 
   clutter_stage_schedule_update (stage);
 
