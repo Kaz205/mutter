@@ -51,6 +51,9 @@ typedef struct _MetaSurfaceActorPrivate
   /* Freeze/thaw accounting */
   MtkRegion *pending_damage;
   gboolean is_frozen;
+
+  /* Frame sync for VRR */
+  GList *frame_sync_stage_views;
 } MetaSurfaceActorPrivate;
 
 static void cullable_iface_init (MetaCullableInterface *iface);
@@ -413,6 +416,31 @@ meta_surface_actor_get_texture (MetaSurfaceActor *self)
     meta_surface_actor_get_instance_private (self);
 
   return priv->texture;
+}
+
+void
+meta_surface_actor_ensure_frame_sync_stage_view (MetaSurfaceActor *self,
+                                                 ClutterStageView *stage_view)
+{
+  MetaSurfaceActorPrivate *priv =
+    meta_surface_actor_get_instance_private (self);
+
+  if (g_list_find (priv->frame_sync_stage_views, stage_view))
+    return;
+
+  priv->frame_sync_stage_views = g_list_prepend (priv->frame_sync_stage_views,
+                                                 stage_view);
+}
+
+void
+meta_surface_actor_remove_frame_sync_stage_view (MetaSurfaceActor *self,
+                                                 ClutterStageView *stage_view)
+{
+  MetaSurfaceActorPrivate *priv =
+    meta_surface_actor_get_instance_private (self);
+
+  priv->frame_sync_stage_views = g_list_remove (priv->frame_sync_stage_views,
+                                                stage_view);
 }
 
 void
