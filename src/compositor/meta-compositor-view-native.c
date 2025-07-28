@@ -514,9 +514,21 @@ update_frame_sync_surface (MetaCompositorViewNative *view_native,
                           view_native);
     }
 
+  stage_view = meta_compositor_view_get_stage_view (compositor_view);
+
+  if (view_native->frame_sync_surface)
+    {
+      meta_surface_actor_remove_frame_sync_stage_view (view_native->frame_sync_surface,
+                                                       stage_view);
+    }
+
   view_native->frame_sync_surface = surface_actor;
 
-  stage_view = meta_compositor_view_get_stage_view (compositor_view);
+  if (surface_actor)
+    {
+      meta_surface_actor_remove_frame_sync_stage_view (surface_actor,
+                                                       stage_view);
+    }
 
   framebuffer = clutter_stage_view_get_onscreen (stage_view);
   if (!META_IS_ONSCREEN_NATIVE (framebuffer))
@@ -557,6 +569,16 @@ static void
 meta_compositor_view_native_dispose (GObject *object)
 {
   MetaCompositorViewNative *view_native = META_COMPOSITOR_VIEW_NATIVE (object);
+
+  if (view_native->frame_sync_surface)
+    {
+      MetaCompositorView *compositor_view = META_COMPOSITOR_VIEW (view_native);
+      ClutterStageView *stage_view =
+        meta_compositor_view_get_stage_view (compositor_view);
+
+      meta_surface_actor_remove_frame_sync_stage_view (view_native->frame_sync_surface,
+                                                       stage_view);
+    }
 
   g_clear_signal_handler (&view_native->frame_sync_surface_repaint_scheduled_id,
                           view_native->frame_sync_surface);
