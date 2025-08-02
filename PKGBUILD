@@ -1,8 +1,14 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Michael Kanis <mkanis_at_gmx_dot_de>
+
 pkgbase=mutter
 pkgname=(
   mutter
+  mutter-docs
 )
-pkgver=47.0
+pkgver=48.4
 pkgrel=1
 pkgdesc="Window manager and compositor for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
@@ -13,6 +19,7 @@ depends=(
   cairo
   colord
   dconf
+  egl-wayland
   fontconfig
   fribidi
   gcc-libs
@@ -32,6 +39,7 @@ depends=(
   libdisplay-info
   libdrm
   libei
+  libgirepository
   libglvnd
   libgudev
   libice
@@ -60,25 +68,30 @@ depends=(
   pipewire
   pixman
   python
+  python-argcomplete
+  python-gobject
   startup-notification
   systemd-libs
   wayland
   xorg-xwayland
 )
 makedepends=(
-  egl-wayland
+  bash-completion
   gi-docgen
   git
   glib2-devel
   gobject-introspection
   meson
+  python-docutils
   sysprof
   wayland-protocols
 )
-source=("git+https://github.com/Kaz205/mutter.git#branch=gnome-47"
-	"git+https://gitlab.gnome.org/GNOME/gvdb.git#commit=b54bc5da25127ef416858a3ad92e57159ff565b3")
+source=(
+  # Mutter tags use SSH signatures which makepkg doesn't understand
+  "git+https://github.com/Kaz205/mutter.git#branch=gnome-48"
+  "git+https://gitlab.gnome.org/GNOME/gvdb.git#commit=466fc22016cf0981424e7121557611942191992f"
+)
 b2sums=('SKIP' 'SKIP')
-options=('lto')
 
 prepare() {
   cd mutter
@@ -86,13 +99,11 @@ prepare() {
 
 build() {
   local meson_options=(
+    -D docs=true
     -D egl_device=true
     -D installed_tests=false
-    -D libdisplay_info=enabled
     -D tests=disabled
     -D wayland_eglstream=true
-    -D profiler=false
-#    -D verbose=false
   )
 
   CFLAGS="${CFLAGS/-O2/-O3} -fno-semantic-interposition"
@@ -105,8 +116,31 @@ build() {
   meson compile -C build
 }
 
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
 package_mutter() {
-  provides=(libmutter-15.so)
+  provides=(libmutter-16.so)
+  optdepends=('bash-completion: Bash completions for gdctl')
 
   meson install -C build --destdir "$pkgdir"
+
+  _pick docs "$pkgdir"/usr/share/mutter-*/doc
 }
+
+package_mutter-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv docs/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
