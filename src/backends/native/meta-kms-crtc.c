@@ -610,7 +610,7 @@ maybe_update_deadline_evasion (MetaKmsCrtc *crtc,
 }
 
 static int64_t
-extrapolate_next_interval_boundary (int64_t base_us,
+mtk_extrapolate_next_interval_boundary (int64_t base_us,
                                     int64_t interval_us)
 {
   int64_t now_us;
@@ -705,8 +705,8 @@ meta_kms_crtc_determine_deadline (MetaKmsCrtc  *crtc,
           int64_t skip_us;
 
           skip_us =
-            extrapolate_next_interval_boundary (next_deadline_us,
-                                                refresh_interval_us) -
+            mtk_extrapolate_next_interval_boundary (next_deadline_us,
+                                                    refresh_interval_us) -
             next_deadline_us;
 
           if (meta_is_topic_enabled (META_DEBUG_KMS_DEADLINE))
@@ -764,3 +764,4 @@ meta_kms_crtc_get_deadline_evasion (MetaKmsCrtc *crtc)
 
   return deadline_evasion_us + DEADLINE_EVASION_CONSTANT_US;
 }
+
