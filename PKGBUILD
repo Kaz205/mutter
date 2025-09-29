@@ -6,10 +6,11 @@
 pkgbase=mutter
 pkgname=(
   mutter
+  mutter-devkit
   mutter-docs
 )
-pkgver=48.4
-pkgrel=1
+pkgver=49.0
+pkgrel=4
 pkgdesc="Window manager and compositor for GNOME"
 url="https://gitlab.gnome.org/GNOME/mutter"
 arch=(x86_64)
@@ -26,6 +27,7 @@ depends=(
   gdk-pixbuf2
   glib2
   glibc
+  glycin
   gnome-desktop-4
   gnome-settings-daemon
   graphene
@@ -69,6 +71,7 @@ depends=(
   pixman
   python
   python-argcomplete
+  python-dbus
   python-gobject
   startup-notification
   systemd-libs
@@ -88,8 +91,8 @@ makedepends=(
 )
 source=(
   # Mutter tags use SSH signatures which makepkg doesn't understand
-  "git+https://github.com/Kaz205/mutter.git#branch=gnome-48"
-  "git+https://gitlab.gnome.org/GNOME/gvdb.git#commit=466fc22016cf0981424e7121557611942191992f"
+  "git+https://github.com/Kaz205/mutter.git#branch=gnome-49"
+  "git+https://gitlab.gnome.org/GNOME/gvdb.git#commit=b54bc5da25127ef416858a3ad92e57159ff565b3"
 )
 b2sums=('SKIP' 'SKIP')
 
@@ -127,12 +130,38 @@ _pick() {
 }
 
 package_mutter() {
-  provides=(libmutter-16.so)
-  optdepends=('bash-completion: Bash completions for gdctl')
+  provides=(libmutter-17.so)
+  optdepends=(
+    'bash-completion: Bash completions for gdctl'
+    'mutter-devkit: Mutter SDK, "MDK"'
+  )
 
   meson install -C build --destdir "$pkgdir"
 
+  _pick devkit "$pkgdir"/usr/lib/mutter-devkit
+  _pick devkit "$pkgdir"/usr/share/applications/org.gnome.Mutter.Mdk.desktop
+  _pick devkit "$pkgdir"/usr/share/icons/hicolor/scalable/apps/org.gnome.Mutter.Mdk.Devel.svg
+  _pick devkit "$pkgdir"/usr/share/icons/hicolor/scalable/apps/org.gnome.Mutter.Mdk.svg
+  _pick devkit "$pkgdir"/usr/share/icons/hicolor/symbolic/apps/org.gnome.Mutter.Mdk-symbolic.svg
+
   _pick docs "$pkgdir"/usr/share/mutter-*/doc
+}
+
+package_mutter-devkit() {
+  pkgdesc="GNOME Mutter Development Kit"
+  depends=(
+    gcc-libs
+    glib2
+    glibc
+    gtk4
+    hicolor-icon-theme
+    libadwaita
+    libei
+    libpipewire
+    mutter
+  )
+
+  mv devkit/* "$pkgdir"
 }
 
 package_mutter-docs() {
